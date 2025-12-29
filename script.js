@@ -1,3 +1,13 @@
+// 🔥 FIREBASE INITIALIZATION
+const firebaseConfig = {
+  apiKey: "AIzaSyAkt1QYgycXgYLFRBLwq2Sks0F-dnPJPD0",
+  authDomain: "mathdroplet.firebaseapp.com",
+  projectId: "mathdroplet",
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 let score = 0;
 let hearts = 3;
 let input = "";
@@ -201,33 +211,53 @@ function restartGame(){
 /* =====================
    LEADERBOARD (LOCAL)
 ===================== */
-function saveScore(){
-  const name = document.getElementById("playerName").value || "Anonymous";
-  let scores = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+async function saveScore(){
+  const name =
+    document.getElementById("playerName").value.trim() || "Anonymous";
 
-  scores.push({ name, score });
-  scores.sort((a, b) => b.score - a.score);
-  scores = scores.slice(0, 20);
+  try {
+    await db.collection("leaderboard").add({
+      name: name,
+      score: score,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
 
-  localStorage.setItem("leaderboard", JSON.stringify(scores));
-  document.getElementById("playerName").value = "";
-  showLeaderboard();
+    document.getElementById("playerName").value = "";
+    showLeaderboard();
+  } catch (e) {
+    alert("Failed to save score. Check internet.");
+  }
 }
 
-function showLeaderboard(){
-  leaderboardList.innerHTML = "";
-  const scores = JSON.parse(localStorage.getItem("leaderboard") || "[]");
 
-  scores.forEach(s => {
-    const li = document.createElement("li");
-    li.textContent = `${s.name} - ${s.score}`;
-    leaderboardList.appendChild(li);
-  });
+async function showLeaderboard(){
+  leaderboardList.innerHTML = "<li>Loading...</li>";
+
+  try {
+    const snapshot = await db
+      .collection("leaderboard")
+      .orderBy("score", "desc")
+      .limit(20)
+      .get();
+
+    leaderboardList.innerHTML = "";
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const li = document.createElement("li");
+      li.textContent = `${data.name} - ${data.score}`;
+      leaderboardList.appendChild(li);
+    });
+
+  } catch (e) {
+    leaderboardList.innerHTML = "<li>Failed to load leaderboard</li>";
+  }
 
   leaderboardScreen.style.display = "flex";
   startScreen.style.display = "none";
   gameOverScreen.style.display = "none";
 }
+
 
 function closeLeaderboard(){
   leaderboardScreen.style.display = "none";
