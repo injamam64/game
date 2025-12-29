@@ -8,6 +8,9 @@ let currentDroplet;
 let gameStarted = false;
 let kidsMode = false;
 
+// NEW
+let level = 1;
+
 const answerBox = document.getElementById("answerBox");
 const gameArea = document.getElementById("gameArea");
 const scoreBox = document.getElementById("score");
@@ -19,33 +22,66 @@ const kidsStatus = document.getElementById("kidsStatus");
 const leaderboardScreen = document.getElementById("leaderboardScreen");
 const leaderboardList = document.getElementById("leaderboardList");
 
+/* =====================
+   HEARTS
+===================== */
 function updateHearts(){
   heartsBox.textContent = "❤️".repeat(hearts);
 }
 
+/* =====================
+   LEVEL CALCULATION
+===================== */
+function calculateLevel(){
+  level = Math.floor(score / 100) + 1;
+}
+
+/* =====================
+   DROP SPEED BY LEVEL
+===================== */
+function getDropSpeed(){
+  return 1.6 + (level - 1) * 0.5; // speed increases per level
+}
+
+/* =====================
+   KIDS MODE
+===================== */
 function toggleKidsMode(){
   if(gameStarted) return;
   kidsMode = !kidsMode;
   kidsStatus.textContent = kidsMode ? "ON" : "OFF";
 }
 
+/* =====================
+   START GAME
+===================== */
 function startGame(){
   gameStarted = true;
   score = 0;
   hearts = 3;
+  level = 1;
+
   scoreBox.textContent = score;
   updateHearts();
+
   startScreen.style.display = "none";
   gameOverScreen.style.display = "none";
+
   createDroplet();
 }
 
+/* =====================
+   CREATE DROPLET
+===================== */
 function createDroplet(){
   if(!gameStarted) return;
+
   gameArea.innerHTML = "";
   input = "";
   answerBox.textContent = "Type answer...";
   dropPosition = -80;
+
+  calculateLevel();
 
   let a, b;
   if(kidsMode){
@@ -61,93 +97,139 @@ function createDroplet(){
   currentDroplet = document.createElement("div");
   currentDroplet.className = "droplet";
   currentDroplet.textContent = `${a} + ${b}`;
+
+  // 🔥 LEVEL 4+: LEFT OR RIGHT DROP
+  if(level >= 4){
+    const side = Math.random() < 0.5 ? "left" : "right";
+    currentDroplet.style.left = side === "left" ? "20%" : "80%";
+    currentDroplet.style.transform = "translateX(-50%)";
+  }else{
+    currentDroplet.style.left = "50%";
+    currentDroplet.style.transform = "translateX(-50%)";
+  }
+
   gameArea.appendChild(currentDroplet);
 
-  dropInterval = setInterval(()=>{
-    dropPosition += 1.6;
+  const speed = getDropSpeed();
+
+  dropInterval = setInterval(() => {
+    dropPosition += speed;
     currentDroplet.style.top = dropPosition + "px";
-    if(dropPosition > 320){
+
+    if(dropPosition > gameArea.offsetHeight){
       clearInterval(dropInterval);
       handleWrong(true);
     }
-  },16);
+  }, 16);
 }
 
+/* =====================
+   KEY PRESS
+===================== */
 function pressKey(num){
   if(!gameStarted) return;
-  if(kidsMode && input.length>=1) return;
-  if(!kidsMode && input.length>=2) return;
+  if(kidsMode && input.length >= 1) return;
+  if(!kidsMode && input.length >= 2) return;
 
   input += num;
   answerBox.textContent = input;
 
   if(parseInt(input) === correctAnswer){
     handleCorrect();
-  }else if(kidsMode || input.length===2){
+  }else if(kidsMode || input.length === 2){
     handleWrong();
   }
 }
 
+/* =====================
+   CLEAR INPUT
+===================== */
 function clearInput(){
-  input="";
-  answerBox.textContent="Type answer...";
+  input = "";
+  answerBox.textContent = "Type answer...";
 }
 
+/* =====================
+   CORRECT
+===================== */
 function handleCorrect(){
-  score+=10;
-  scoreBox.textContent=score;
+  score += 10;
+  scoreBox.textContent = score;
+
   clearInterval(dropInterval);
   currentDroplet.classList.add("burst-correct");
-  setTimeout(createDroplet,300);
+
+  setTimeout(createDroplet, 300);
 }
 
+/* =====================
+   WRONG / MISSED
+===================== */
 function handleWrong(){
   clearInterval(dropInterval);
   currentDroplet.classList.add("burst-wrong");
-  setTimeout(()=>{
+
+  setTimeout(() => {
     hearts--;
     updateHearts();
-    if(hearts<=0) gameOver();
-    else createDroplet();
-  },300);
+
+    if(hearts <= 0){
+      gameOver();
+    }else{
+      createDroplet();
+    }
+  }, 250);
 }
 
+/* =====================
+   GAME OVER
+===================== */
 function gameOver(){
-  gameStarted=false;
-  finalScore.textContent=score;
-  gameOverScreen.style.display="flex";
+  gameStarted = false;
+  finalScore.textContent = score;
+  gameOverScreen.style.display = "flex";
 }
 
+/* =====================
+   RESTART
+===================== */
 function restartGame(){
-  gameOverScreen.style.display="none";
-  startScreen.style.display="flex";
+  gameOverScreen.style.display = "none";
+  startScreen.style.display = "flex";
 }
 
+/* =====================
+   LEADERBOARD (LOCAL)
+===================== */
 function saveScore(){
   const name = document.getElementById("playerName").value || "Anonymous";
-  let scores = JSON.parse(localStorage.getItem("leaderboard")||"[]");
-  scores.push({name,score});
-  scores.sort((a,b)=>b.score-a.score);
-  scores = scores.slice(0,20);
-  localStorage.setItem("leaderboard",JSON.stringify(scores));
-  document.getElementById("playerName").value="";
+  let scores = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+
+  scores.push({ name, score });
+  scores.sort((a, b) => b.score - a.score);
+  scores = scores.slice(0, 20);
+
+  localStorage.setItem("leaderboard", JSON.stringify(scores));
+  document.getElementById("playerName").value = "";
   showLeaderboard();
 }
 
 function showLeaderboard(){
-  leaderboardList.innerHTML="";
-  const scores = JSON.parse(localStorage.getItem("leaderboard")||"[]");
-  scores.forEach(s=>{
-    const li=document.createElement("li");
-    li.textContent=`${s.name} - ${s.score}`;
+  leaderboardList.innerHTML = "";
+  const scores = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+
+  scores.forEach(s => {
+    const li = document.createElement("li");
+    li.textContent = `${s.name} - ${s.score}`;
     leaderboardList.appendChild(li);
   });
-  leaderboardScreen.style.display="flex";
-  startScreen.style.display="none";
-  gameOverScreen.style.display="none";
+
+  leaderboardScreen.style.display = "flex";
+  startScreen.style.display = "none";
+  gameOverScreen.style.display = "none";
 }
 
 function closeLeaderboard(){
-  leaderboardScreen.style.display="none";
-  startScreen.style.display="flex";
+  leaderboardScreen.style.display = "none";
+  startScreen.style.display = "flex";
 }
