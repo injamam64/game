@@ -1,4 +1,4 @@
-// 🔥 FIREBASE INITIALIZATION
+// 🔥 FIREBASE INITIALIZATION (COMPAT SDK REQUIRED)
 const firebaseConfig = {
   apiKey: "AIzaSyAkt1QYgycXgYLFRBLwq2Sks0F-dnPJPD0",
   authDomain: "mathdroplet.firebaseapp.com",
@@ -8,6 +8,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+/* =====================
+   GAME STATE
+===================== */
 let score = 0;
 let hearts = 3;
 let input = "";
@@ -17,10 +20,12 @@ let dropPosition;
 let currentDroplet;
 let gameStarted = false;
 let kidsMode = false;
-
-// NEW
 let level = 1;
+let scoreSubmitted = false;
 
+/* =====================
+   ELEMENTS
+===================== */
 const answerBox = document.getElementById("answerBox");
 const gameArea = document.getElementById("gameArea");
 const scoreBox = document.getElementById("score");
@@ -31,30 +36,36 @@ const finalScore = document.getElementById("finalScore");
 const kidsStatus = document.getElementById("kidsStatus");
 const leaderboardScreen = document.getElementById("leaderboardScreen");
 const leaderboardList = document.getElementById("leaderboardList");
+const playerNameInput = document.getElementById("playerName");
+const submitBtn = document.getElementById("submitBtn");
 
 /* =====================
-   HEARTS
+   UI HELPERS
 ===================== */
+function showScreen(screen){
+  startScreen.style.display = "none";
+  gameOverScreen.style.display = "none";
+  leaderboardScreen.style.display = "none";
+  screen.style.display = "flex";
+}
+
 function updateHearts(){
   heartsBox.textContent = "❤️".repeat(hearts);
 }
 
 /* =====================
-   LEVEL CALCULATION
+   LEVEL & SPEED
 ===================== */
 function calculateLevel(){
   level = Math.floor(score / 100) + 1;
 }
 
-/* =====================
-   DROP SPEED BY LEVEL
-===================== */
 function getDropSpeed(){
-  return 1.6 + (level - 1) * 0.5; // speed increases per level
+  return 1.6 + (level - 1) * 0.5;
 }
 
 /* =====================
-   KIDS MODE
+   MODES
 ===================== */
 function toggleKidsMode(){
   if(gameStarted) return;
@@ -70,13 +81,16 @@ function startGame(){
   score = 0;
   hearts = 3;
   level = 1;
+  input = "";
+  scoreSubmitted = false;
 
   scoreBox.textContent = score;
   updateHearts();
 
-  startScreen.style.display = "none";
-  gameOverScreen.style.display = "none";
+  if(submitBtn) submitBtn.disabled = false;
+  if(playerNameInput) playerNameInput.value = "";
 
+  showScreen(null);
   createDroplet();
 }
 
@@ -108,16 +122,13 @@ function createDroplet(){
   currentDroplet.className = "droplet";
   currentDroplet.textContent = `${a} + ${b}`;
 
-  // 🔥 LEVEL 4+: LEFT OR RIGHT DROP
   if(level >= 4){
-    const side = Math.random() < 0.5 ? "left" : "right";
-    currentDroplet.style.left = side === "left" ? "20%" : "80%";
-    currentDroplet.style.transform = "translateX(-50%)";
+    currentDroplet.style.left = Math.random() < 0.5 ? "20%" : "80%";
   }else{
     currentDroplet.style.left = "50%";
-    currentDroplet.style.transform = "translateX(-50%)";
   }
 
+  currentDroplet.style.transform = "translateX(-50%)";
   gameArea.appendChild(currentDroplet);
 
   const speed = getDropSpeed();
@@ -128,13 +139,13 @@ function createDroplet(){
 
     if(dropPosition > gameArea.offsetHeight){
       clearInterval(dropInterval);
-      handleWrong(true);
+      handleWrong();
     }
   }, 16);
 }
 
 /* =====================
-   KEY PRESS
+   INPUT
 ===================== */
 function pressKey(num){
   if(!gameStarted) return;
@@ -151,16 +162,13 @@ function pressKey(num){
   }
 }
 
-/* =====================
-   CLEAR INPUT
-===================== */
 function clearInput(){
   input = "";
   answerBox.textContent = "Type answer...";
 }
 
 /* =====================
-   CORRECT
+   ANSWER HANDLERS
 ===================== */
 function handleCorrect(){
   score += 10;
@@ -172,9 +180,6 @@ function handleCorrect(){
   setTimeout(createDroplet, 300);
 }
 
-/* =====================
-   WRONG / MISSED
-===================== */
 function handleWrong(){
   clearInterval(dropInterval);
   currentDroplet.classList.add("burst-wrong");
@@ -197,38 +202,40 @@ function handleWrong(){
 function gameOver(){
   gameStarted = false;
   finalScore.textContent = score;
-  gameOverScreen.style.display = "flex";
+  showScreen(gameOverScreen);
 }
 
 /* =====================
    RESTART
 ===================== */
 function restartGame(){
-  gameOverScreen.style.display = "none";
-  startScreen.style.display = "flex";
+  showScreen(startScreen);
 }
 
 /* =====================
-   LEADERBOARD (LOCAL)
+   LEADERBOARD (GLOBAL)
 ===================== */
 async function saveScore(){
-  const name =
-    document.getElementById("playerName").value.trim() || "Anonymous";
+  if(scoreSubmitted || score <= 0) return;
+
+  const name = playerNameInput.value.trim() || "Anonymous";
+  scoreSubmitted = true;
+  submitBtn.disabled = true;
 
   try {
     await db.collection("leaderboard").add({
-      name: name,
-      score: score,
+      name,
+      score,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    document.getElementById("playerName").value = "";
     showLeaderboard();
   } catch (e) {
-    alert("Failed to save score. Check internet.");
+    alert("Failed to save score");
+    scoreSubmitted = false;
+    submitBtn.disabled = false;
   }
 }
-
 
 async function showLeaderboard(){
   leaderboardList.innerHTML = "<li>Loading...</li>";
@@ -241,25 +248,20 @@ async function showLeaderboard(){
       .get();
 
     leaderboardList.innerHTML = "";
-
     snapshot.forEach(doc => {
-      const data = doc.data();
+      const { name, score } = doc.data();
       const li = document.createElement("li");
-      li.textContent = `${data.name} - ${data.score}`;
+      li.textContent = `${name} - ${score}`;
       leaderboardList.appendChild(li);
     });
 
   } catch (e) {
-    leaderboardList.innerHTML = "<li>Failed to load leaderboard</li>";
+    leaderboardList.innerHTML = "<li>Error loading leaderboard</li>";
   }
 
-  leaderboardScreen.style.display = "flex";
-  startScreen.style.display = "none";
-  gameOverScreen.style.display = "none";
+  showScreen(leaderboardScreen);
 }
 
-
 function closeLeaderboard(){
-  leaderboardScreen.style.display = "none";
-  startScreen.style.display = "flex";
+  showScreen(startScreen);
 }
