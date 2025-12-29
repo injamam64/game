@@ -90,7 +90,10 @@ function startGame(){
   if(submitBtn) submitBtn.disabled = false;
   if(playerNameInput) playerNameInput.value = "";
 
-  showScreen(null);
+  startScreen.style.display = "none";
+gameOverScreen.style.display = "none";
+leaderboardScreen.style.display = "none";
+
   createDroplet();
 }
 
