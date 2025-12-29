@@ -50,17 +50,20 @@
     <h2>Game Over</h2>
     <p>Your Score: <span id="finalScore">0</span></p>
 
-    <input id="playerName" placeholder="Enter your name " maxlength="12">
-    <button class ="primary-btn" onclick="submitBtn()">Submit Score</button>
-    <button class="secondary-btn" onclick="restartGame()">Skip & Replay</button>
-  </div>
+   <input id="playerName" placeholder="Enter your name" maxlength="12">
 
-  <!-- LEADERBOARD -->
-  <div class="game-over" id="leaderboardScreen">
-    <h2>🏆 Top 20 Players</h2>
-    <ol id="leaderboardList"></ol>
-    <button onclick="closeLeaderboard()">Back</button>
-  </div>
+<button
+  class="primary-btn"
+  id="submitBtn"
+  onclick="saveScore()"
+>
+  Submit Score
+</button>
+
+<button class="secondary-btn" onclick="restartGame()">
+  Skip & Replay
+</button>
+
 
 </div>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
