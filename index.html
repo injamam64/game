@@ -40,9 +40,8 @@
     <div class="kids-toggle" onclick="toggleKidsMode()">
       Kids Mode: <span id="kidsStatus">OFF</span>
     </div>
-   <button class="primary-btn" onclick="startGame()">▶ Start Game</button>
-<button class="secondary-btn" onclick="showLeaderboard()">🏆 Leaderboard</button>
-
+    <button class="primary-btn" onclick="startGame()">▶ Start Game</button>
+    <button class="secondary-btn" onclick="showLeaderboard()">🏆 Leaderboard</button>
   </div>
 
   <!-- GAME OVER -->
@@ -50,22 +49,26 @@
     <h2>Game Over</h2>
     <p>Your Score: <span id="finalScore">0</span></p>
 
-   <input id="playerName" placeholder="Enter your name" maxlength="12">
+    <input id="playerName" placeholder="Enter your name" maxlength="12">
 
-<button
-  class="primary-btn"
-  id="submitBtn"
-  onclick="saveScore()"
->
-  Submit Score
-</button>
+    <button class="primary-btn" id="submitBtn" onclick="saveScore()">
+      Submit Score
+    </button>
 
-<button class="secondary-btn" onclick="restartGame()">
-  Skip & Replay
-</button>
+    <button class="secondary-btn" onclick="restartGame()">
+      Skip & Replay
+    </button>
+  </div>
 
+  <!-- ✅ LEADERBOARD (THIS WAS MISSING) -->
+  <div class="game-over" id="leaderboardScreen">
+    <h2>🏆 Top 20 Players</h2>
+    <ol id="leaderboardList"></ol>
+    <button class="secondary-btn" onclick="closeLeaderboard()">Back</button>
+  </div>
 
 </div>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="script.js"></script>
