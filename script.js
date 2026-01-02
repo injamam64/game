@@ -21,7 +21,6 @@ let currentDroplet;
 let gameStarted = false;
 let kidsMode = false;
 let level = 1;
-let scoreSubmitted = false;
 
 /* =====================
    ELEMENTS
@@ -30,17 +29,20 @@ const answerBox = document.getElementById("answerBox");
 const gameArea = document.getElementById("gameArea");
 const scoreBox = document.getElementById("score");
 const heartsBox = document.querySelector(".hearts");
+
 const startScreen = document.getElementById("startScreen");
 const gameOverScreen = document.getElementById("gameOver");
+const leaderboardScreen = document.getElementById("leaderboardScreen");
+
 const finalScore = document.getElementById("finalScore");
 const kidsStatus = document.getElementById("kidsStatus");
-const leaderboardScreen = document.getElementById("leaderboardScreen");
 const leaderboardList = document.getElementById("leaderboardList");
+
 const playerNameInput = document.getElementById("playerName");
 const submitBtn = document.getElementById("submitBtn");
 
 /* =====================
-   UI HELPERS
+   SCREEN CONTROLLER (ONLY SYSTEM)
 ===================== */
 function showScreen(screen){
   startScreen.classList.add("hidden");
@@ -49,11 +51,12 @@ function showScreen(screen){
 
   if (screen) {
     screen.classList.remove("hidden");
-    screen.style.display = "flex";
   }
 }
 
-
+/* =====================
+   UI HELPERS
+===================== */
 function updateHearts(){
   heartsBox.textContent = "❤️".repeat(hearts);
 }
@@ -87,18 +90,14 @@ function startGame(){
   hearts = 3;
   level = 1;
   input = "";
-  scoreSubmitted = false;
 
   scoreBox.textContent = score;
   updateHearts();
 
-  if(submitBtn) submitBtn.disabled = false;
-  if(playerNameInput) playerNameInput.value = "";
+  submitBtn.disabled = false;
+  playerNameInput.value = "";
 
-  startScreen.style.display = "none";
-gameOverScreen.style.display = "none";
-leaderboardScreen.style.display = "none";
-
+  showScreen(null); // 👈 hide all overlays
   createDroplet();
 }
 
@@ -117,11 +116,11 @@ function createDroplet(){
 
   let a, b;
   if(kidsMode){
-    a = Math.floor(Math.random()*9);
-    b = Math.floor(Math.random()*(9-a));
+    a = Math.floor(Math.random() * 9);
+    b = Math.floor(Math.random() * (9 - a));
   }else{
-    a = Math.floor(Math.random()*20)+1;
-    b = Math.floor(Math.random()*20)+1;
+    a = Math.floor(Math.random() * 20) + 1;
+    b = Math.floor(Math.random() * 20) + 1;
   }
 
   correctAnswer = a + b;
@@ -130,11 +129,9 @@ function createDroplet(){
   currentDroplet.className = "droplet";
   currentDroplet.textContent = `${a} + ${b}`;
 
-  if(level >= 4){
-    currentDroplet.style.left = Math.random() < 0.5 ? "20%" : "80%";
-  }else{
-    currentDroplet.style.left = "50%";
-  }
+  currentDroplet.style.left =
+    level >= 4 && Math.random() < 0.5 ? "20%" :
+    level >= 4 ? "80%" : "50%";
 
   currentDroplet.style.transform = "translateX(-50%)";
   gameArea.appendChild(currentDroplet);
@@ -176,7 +173,7 @@ function clearInput(){
 }
 
 /* =====================
-   ANSWER HANDLERS
+   ANSWERS
 ===================== */
 function handleCorrect(){
   score += 10;
@@ -221,34 +218,28 @@ function restartGame(){
 }
 
 /* =====================
-   LEADERBOARD (GLOBAL)
+   LEADERBOARD
 ===================== */
 async function saveScore(){
-  if (score <= 0) {
-    alert("Score is zero");
-    return;
-  }
+  if(score <= 0) return;
 
   const name = playerNameInput.value.trim() || "Anonymous";
   submitBtn.disabled = true;
 
   try {
     await db.collection("leaderboard").add({
-      name: name,
-      score: score,
+      name,
+      score,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // ✅ GO TO HOME AFTER SUBMIT
-    showScreen(startScreen);
+    showScreen(startScreen); // ✅ FIXED
 
   } catch (e) {
     alert("Failed to save score");
     submitBtn.disabled = false;
   }
 }
-
-
 
 async function showLeaderboard(){
   leaderboardList.innerHTML = "<li>Loading...</li>";
