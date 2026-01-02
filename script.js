@@ -232,8 +232,8 @@ async function saveScore(){
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    showLeaderboard();
-  } catch (e) {
+    showScreen(startScreen);
+ } catch (e) {
     alert("Failed to save score");
     scoreSubmitted = false;
     submitBtn.disabled = false;
