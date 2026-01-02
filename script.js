@@ -85,10 +85,7 @@ function toggleKidsMode(){
    START GAME
 ===================== */
 function startGame(){
-  // 🔥 HARD RESET
   clearInterval(dropInterval);
-  dropInterval = null;
-  currentDroplet = null;
 
   gameStarted = true;
   isGameOver = false;
@@ -120,47 +117,36 @@ function createDroplet(){
 
   calculateLevel();
 
-  let a, b;
-  if(kidsMode){
-    a = Math.floor(Math.random() * 9);
-    b = Math.floor(Math.random() * (9 - a));
-  } else {
-    a = Math.floor(Math.random() * 20) + 1;
-    b = Math.floor(Math.random() * 20) + 1;
-  }
-
+  let a = Math.floor(Math.random() * 10);
+  let b = Math.floor(Math.random() * 10);
   correctAnswer = a + b;
 
   currentDroplet = document.createElement("div");
   currentDroplet.className = "droplet";
   currentDroplet.textContent = `${a} + ${b}`;
-
-  currentDroplet.style.left =
-    level >= 4 && Math.random() < 0.5 ? "20%" :
-    level >= 4 ? "80%" : "50%";
-
+  currentDroplet.style.left = "50%";
   currentDroplet.style.transform = "translateX(-50%)";
   gameArea.appendChild(currentDroplet);
 
-  let position = -80;
-  const speed = getDropSpeed();
-
+  let pos = -80;
   clearInterval(dropInterval);
+
   dropInterval = setInterval(() => {
-    if (!gameStarted || isGameOver) {
+    if (isGameOver) {
       clearInterval(dropInterval);
       return;
     }
 
-    position += speed;
-    currentDroplet.style.top = position + "px";
+    pos += 2;
+    currentDroplet.style.top = pos + "px";
 
-    if (position > gameArea.offsetHeight) {
+    if (pos > gameArea.offsetHeight) {
       clearInterval(dropInterval);
       handleWrong();
     }
   }, 16);
 }
+
 
 /* =====================
    INPUT
@@ -206,34 +192,29 @@ function handleWrong(){
   if (isGameOver) return;
 
   clearInterval(dropInterval);
-  if (currentDroplet) currentDroplet.classList.add("burst-wrong");
 
-  setTimeout(() => {
-    if (isGameOver) return;
+  hearts--;
+  updateHearts();
 
-    hearts--;
-    updateHearts();
+  if (hearts <= 0) {
+    isGameOver = true;
+    gameStarted = false;
+    gameOver();
+    return;
+  }
 
-    if (hearts <= 0) {
-      isGameOver = true;
-      gameStarted = false;
-
-      gameOver();
-      return;
-    }
-
-    createDroplet();
-  }, 250);
+  setTimeout(createDroplet, 300);
 }
+
 
 /* =====================
    GAME OVER
 ===================== */
 function gameOver(){
-  clearInterval(dropInterval);
   finalScore.textContent = score;
   showScreen(gameOverScreen);
 }
+
 
 /* =====================
    RESTART
