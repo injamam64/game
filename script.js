@@ -220,7 +220,8 @@ function restartGame(){
 ===================== */
 async function saveScore(){
   alert("saveScore clicked");
-  if(scoreSubmitted || score <= 0) return;
+ console.log("score:", score, "scoreSubmitted:", scoreSubmitted);
+
 
   const name = playerNameInput.value.trim() || "Anonymous";
   scoreSubmitted = true;
