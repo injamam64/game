@@ -15,12 +15,13 @@ let score = 0;
 let hearts = 3;
 let input = "";
 let correctAnswer = 0;
-let dropInterval = null;
-let currentDroplet = null;
+let dropInterval;
+let dropPosition;
+let currentDroplet;
 let gameStarted = false;
-let isGameOver = false;   // 🔒 HARD LOCK
 let kidsMode = false;
 let level = 1;
+let scoreSubmitted = false;
 
 /* =====================
    ELEMENTS
@@ -29,20 +30,17 @@ const answerBox = document.getElementById("answerBox");
 const gameArea = document.getElementById("gameArea");
 const scoreBox = document.getElementById("score");
 const heartsBox = document.querySelector(".hearts");
-
 const startScreen = document.getElementById("startScreen");
 const gameOverScreen = document.getElementById("gameOver");
-const leaderboardScreen = document.getElementById("leaderboardScreen");
-
 const finalScore = document.getElementById("finalScore");
 const kidsStatus = document.getElementById("kidsStatus");
+const leaderboardScreen = document.getElementById("leaderboardScreen");
 const leaderboardList = document.getElementById("leaderboardList");
-
 const playerNameInput = document.getElementById("playerName");
 const submitBtn = document.getElementById("submitBtn");
 
 /* =====================
-   SCREEN CONTROLLER (ONLY SYSTEM)
+   UI HELPERS
 ===================== */
 function showScreen(screen){
   startScreen.classList.add("hidden");
@@ -51,12 +49,11 @@ function showScreen(screen){
 
   if (screen) {
     screen.classList.remove("hidden");
+    screen.style.display = "flex";
   }
 }
 
-/* =====================
-   UI HELPERS
-===================== */
+
 function updateHearts(){
   heartsBox.textContent = "❤️".repeat(hearts);
 }
@@ -85,23 +82,23 @@ function toggleKidsMode(){
    START GAME
 ===================== */
 function startGame(){
-  clearInterval(dropInterval);
-
   gameStarted = true;
-  isGameOver = false;
-
   score = 0;
   hearts = 3;
   level = 1;
   input = "";
+  scoreSubmitted = false;
 
   scoreBox.textContent = score;
   updateHearts();
 
-  submitBtn.disabled = false;
-  playerNameInput.value = "";
+  if(submitBtn) submitBtn.disabled = false;
+  if(playerNameInput) playerNameInput.value = "";
 
-  showScreen(null);
+  startScreen.style.display = "none";
+gameOverScreen.style.display = "none";
+leaderboardScreen.style.display = "none";
+
   createDroplet();
 }
 
@@ -109,59 +106,66 @@ function startGame(){
    CREATE DROPLET
 ===================== */
 function createDroplet(){
-  if (!gameStarted || isGameOver || hearts <= 0) return;
+  if(!gameStarted) return;
 
   gameArea.innerHTML = "";
   input = "";
   answerBox.textContent = "Type answer...";
+  dropPosition = -80;
 
   calculateLevel();
 
-  let a = Math.floor(Math.random() * 10);
-  let b = Math.floor(Math.random() * 10);
+  let a, b;
+  if(kidsMode){
+    a = Math.floor(Math.random()*9);
+    b = Math.floor(Math.random()*(9-a));
+  }else{
+    a = Math.floor(Math.random()*20)+1;
+    b = Math.floor(Math.random()*20)+1;
+  }
+
   correctAnswer = a + b;
 
   currentDroplet = document.createElement("div");
   currentDroplet.className = "droplet";
   currentDroplet.textContent = `${a} + ${b}`;
-  currentDroplet.style.left = "50%";
+
+  if(level >= 4){
+    currentDroplet.style.left = Math.random() < 0.5 ? "20%" : "80%";
+  }else{
+    currentDroplet.style.left = "50%";
+  }
+
   currentDroplet.style.transform = "translateX(-50%)";
   gameArea.appendChild(currentDroplet);
 
-  let pos = -80;
-  clearInterval(dropInterval);
+  const speed = getDropSpeed();
 
   dropInterval = setInterval(() => {
-    if (isGameOver) {
-      clearInterval(dropInterval);
-      return;
-    }
+    dropPosition += speed;
+    currentDroplet.style.top = dropPosition + "px";
 
-    pos += 2;
-    currentDroplet.style.top = pos + "px";
-
-    if (pos > gameArea.offsetHeight) {
+    if(dropPosition > gameArea.offsetHeight){
       clearInterval(dropInterval);
       handleWrong();
     }
   }, 16);
 }
 
-
 /* =====================
    INPUT
 ===================== */
 function pressKey(num){
-  if(!gameStarted || isGameOver) return;
+  if(!gameStarted) return;
   if(kidsMode && input.length >= 1) return;
   if(!kidsMode && input.length >= 2) return;
 
   input += num;
   answerBox.textContent = input;
 
-  if (parseInt(input) === correctAnswer) {
+  if(parseInt(input) === correctAnswer){
     handleCorrect();
-  } else if (kidsMode || input.length === 2) {
+  }else if(kidsMode || input.length === 2){
     handleWrong();
   }
 }
@@ -172,49 +176,42 @@ function clearInput(){
 }
 
 /* =====================
-   ANSWERS
+   ANSWER HANDLERS
 ===================== */
 function handleCorrect(){
-  if (isGameOver) return;
-
   score += 10;
   scoreBox.textContent = score;
 
   clearInterval(dropInterval);
   currentDroplet.classList.add("burst-correct");
 
-  setTimeout(() => {
-    if (!isGameOver) createDroplet();
-  }, 300);
-}
-
-function handleWrong(){
-  if (isGameOver) return;
-
-  clearInterval(dropInterval);
-
-  hearts--;
-  updateHearts();
-
-  if (hearts <= 0) {
-    isGameOver = true;
-    gameStarted = false;
-    gameOver();
-    return;
-  }
-
   setTimeout(createDroplet, 300);
 }
 
+function handleWrong(){
+  clearInterval(dropInterval);
+  currentDroplet.classList.add("burst-wrong");
+
+  setTimeout(() => {
+    hearts--;
+    updateHearts();
+
+    if(hearts <= 0){
+      gameOver();
+    }else{
+      createDroplet();
+    }
+  }, 250);
+}
 
 /* =====================
    GAME OVER
 ===================== */
 function gameOver(){
+  gameStarted = false;
   finalScore.textContent = score;
   showScreen(gameOverScreen);
 }
-
 
 /* =====================
    RESTART
@@ -224,27 +221,34 @@ function restartGame(){
 }
 
 /* =====================
-   LEADERBOARD
+   LEADERBOARD (GLOBAL)
 ===================== */
 async function saveScore(){
-  if (score <= 0) return;
+  if (score <= 0) {
+    alert("Score is zero");
+    return;
+  }
 
-  submitBtn.disabled = true;
   const name = playerNameInput.value.trim() || "Anonymous";
+  submitBtn.disabled = true;
 
   try {
     await db.collection("leaderboard").add({
-      name,
-      score,
+      name: name,
+      score: score,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
+    // ✅ GO TO HOME AFTER SUBMIT
     showScreen(startScreen);
+
   } catch (e) {
     alert("Failed to save score");
     submitBtn.disabled = false;
   }
 }
+
+
 
 async function showLeaderboard(){
   leaderboardList.innerHTML = "<li>Loading...</li>";
@@ -264,7 +268,7 @@ async function showLeaderboard(){
       leaderboardList.appendChild(li);
     });
 
-  } catch {
+  } catch (e) {
     leaderboardList.innerHTML = "<li>Error loading leaderboard</li>";
   }
 
