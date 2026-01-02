@@ -232,3 +232,6 @@ body {
   background:rgba(255,255,255,0.9);
   color:#333;
 }
+.hidden {
+  display: none !important;
+}
