@@ -43,11 +43,16 @@ const submitBtn = document.getElementById("submitBtn");
    UI HELPERS
 ===================== */
 function showScreen(screen){
-  startScreen.style.display = "none";
-  gameOverScreen.style.display = "none";
-  leaderboardScreen.style.display = "none";
-  screen.style.display = "flex";
+  startScreen.classList.add("hidden");
+  gameOverScreen.classList.add("hidden");
+  leaderboardScreen.classList.add("hidden");
+
+  if (screen) {
+    screen.classList.remove("hidden");
+    screen.style.display = "flex";
+  }
 }
+
 
 function updateHearts(){
   heartsBox.textContent = "❤️".repeat(hearts);
