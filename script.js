@@ -105,7 +105,7 @@ function startGame(){
    CREATE DROPLET
 ===================== */
 function createDroplet(){
-  if(!gameStarted) return;
+  if (!gameStarted || hearts <= 0) return;
 
   gameArea.innerHTML = "";
   input = "";
@@ -187,19 +187,24 @@ function handleCorrect(){
 
 function handleWrong(){
   clearInterval(dropInterval);
+
+  if (!currentDroplet) return;
   currentDroplet.classList.add("burst-wrong");
 
   setTimeout(() => {
     hearts--;
     updateHearts();
 
-    if(hearts <= 0){
-      gameOver();
-    }else{
-      createDroplet();
+    if (hearts <= 0) {
+      gameStarted = false;        // 🔥 STOP GAME HARD
+      gameOver();                // SHOW GAME OVER
+      return;                    // ⛔ STOP HERE
     }
+
+    createDroplet();             // only if hearts left
   }, 250);
 }
+
 
 /* =====================
    GAME OVER
