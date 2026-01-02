@@ -232,13 +232,16 @@ async function saveScore(){
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
+    // 👉 Go back to HOME instead of leaderboard
     showScreen(startScreen);
- } catch (e) {
+
+  } catch (e) {
     alert("Failed to save score");
     scoreSubmitted = false;
     submitBtn.disabled = false;
   }
 }
+
 
 async function showLeaderboard(){
   leaderboardList.innerHTML = "<li>Loading...</li>";
