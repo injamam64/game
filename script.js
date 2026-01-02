@@ -219,33 +219,30 @@ function restartGame(){
    LEADERBOARD (GLOBAL)
 ===================== */
 async function saveScore(){
-  if(score <= 0) {
-  alert("Score is zero");
-  return;
-}
-
-
+  if (score <= 0) {
+    alert("Score is zero");
+    return;
+  }
 
   const name = playerNameInput.value.trim() || "Anonymous";
-  scoreSubmitted = true;
   submitBtn.disabled = true;
 
   try {
     await db.collection("leaderboard").add({
-      name,
-      score,
+      name: name,
+      score: score,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // 👉 Go back to HOME instead of leaderboard
+    // ✅ GO TO HOME AFTER SUBMIT
     showScreen(startScreen);
 
   } catch (e) {
     alert("Failed to save score");
-    scoreSubmitted = false;
     submitBtn.disabled = false;
   }
 }
+
 
 
 async function showLeaderboard(){
