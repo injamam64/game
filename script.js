@@ -15,10 +15,10 @@ let score = 0;
 let hearts = 3;
 let input = "";
 let correctAnswer = 0;
-let dropInterval;
-let dropPosition;
-let currentDroplet;
+let dropInterval = null;
+let currentDroplet = null;
 let gameStarted = false;
+let isGameOver = false;   // 🔒 HARD LOCK
 let kidsMode = false;
 let level = 1;
 
@@ -85,7 +85,14 @@ function toggleKidsMode(){
    START GAME
 ===================== */
 function startGame(){
+  // 🔥 HARD RESET
+  clearInterval(dropInterval);
+  dropInterval = null;
+  currentDroplet = null;
+
   gameStarted = true;
+  isGameOver = false;
+
   score = 0;
   hearts = 3;
   level = 1;
@@ -97,7 +104,7 @@ function startGame(){
   submitBtn.disabled = false;
   playerNameInput.value = "";
 
-  showScreen(null); // 👈 hide all overlays
+  showScreen(null);
   createDroplet();
 }
 
@@ -105,12 +112,11 @@ function startGame(){
    CREATE DROPLET
 ===================== */
 function createDroplet(){
-  if (!gameStarted || hearts <= 0) return;
+  if (!gameStarted || isGameOver || hearts <= 0) return;
 
   gameArea.innerHTML = "";
   input = "";
   answerBox.textContent = "Type answer...";
-  dropPosition = -80;
 
   calculateLevel();
 
@@ -118,7 +124,7 @@ function createDroplet(){
   if(kidsMode){
     a = Math.floor(Math.random() * 9);
     b = Math.floor(Math.random() * (9 - a));
-  }else{
+  } else {
     a = Math.floor(Math.random() * 20) + 1;
     b = Math.floor(Math.random() * 20) + 1;
   }
@@ -136,13 +142,20 @@ function createDroplet(){
   currentDroplet.style.transform = "translateX(-50%)";
   gameArea.appendChild(currentDroplet);
 
+  let position = -80;
   const speed = getDropSpeed();
 
+  clearInterval(dropInterval);
   dropInterval = setInterval(() => {
-    dropPosition += speed;
-    currentDroplet.style.top = dropPosition + "px";
+    if (!gameStarted || isGameOver) {
+      clearInterval(dropInterval);
+      return;
+    }
 
-    if(dropPosition > gameArea.offsetHeight){
+    position += speed;
+    currentDroplet.style.top = position + "px";
+
+    if (position > gameArea.offsetHeight) {
       clearInterval(dropInterval);
       handleWrong();
     }
@@ -153,16 +166,16 @@ function createDroplet(){
    INPUT
 ===================== */
 function pressKey(num){
-  if(!gameStarted) return;
+  if(!gameStarted || isGameOver) return;
   if(kidsMode && input.length >= 1) return;
   if(!kidsMode && input.length >= 2) return;
 
   input += num;
   answerBox.textContent = input;
 
-  if(parseInt(input) === correctAnswer){
+  if (parseInt(input) === correctAnswer) {
     handleCorrect();
-  }else if(kidsMode || input.length === 2){
+  } else if (kidsMode || input.length === 2) {
     handleWrong();
   }
 }
@@ -176,41 +189,48 @@ function clearInput(){
    ANSWERS
 ===================== */
 function handleCorrect(){
+  if (isGameOver) return;
+
   score += 10;
   scoreBox.textContent = score;
 
   clearInterval(dropInterval);
   currentDroplet.classList.add("burst-correct");
 
-  setTimeout(createDroplet, 300);
+  setTimeout(() => {
+    if (!isGameOver) createDroplet();
+  }, 300);
 }
 
 function handleWrong(){
-  clearInterval(dropInterval);
+  if (isGameOver) return;
 
-  if (!currentDroplet) return;
-  currentDroplet.classList.add("burst-wrong");
+  clearInterval(dropInterval);
+  if (currentDroplet) currentDroplet.classList.add("burst-wrong");
 
   setTimeout(() => {
+    if (isGameOver) return;
+
     hearts--;
     updateHearts();
 
     if (hearts <= 0) {
-      gameStarted = false;        // 🔥 STOP GAME HARD
-      gameOver();                // SHOW GAME OVER
-      return;                    // ⛔ STOP HERE
+      isGameOver = true;
+      gameStarted = false;
+
+      gameOver();
+      return;
     }
 
-    createDroplet();             // only if hearts left
+    createDroplet();
   }, 250);
 }
-
 
 /* =====================
    GAME OVER
 ===================== */
 function gameOver(){
-  gameStarted = false;
+  clearInterval(dropInterval);
   finalScore.textContent = score;
   showScreen(gameOverScreen);
 }
@@ -226,10 +246,10 @@ function restartGame(){
    LEADERBOARD
 ===================== */
 async function saveScore(){
-  if(score <= 0) return;
+  if (score <= 0) return;
 
-  const name = playerNameInput.value.trim() || "Anonymous";
   submitBtn.disabled = true;
+  const name = playerNameInput.value.trim() || "Anonymous";
 
   try {
     await db.collection("leaderboard").add({
@@ -238,8 +258,7 @@ async function saveScore(){
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    showScreen(startScreen); // ✅ FIXED
-
+    showScreen(startScreen);
   } catch (e) {
     alert("Failed to save score");
     submitBtn.disabled = false;
@@ -264,7 +283,7 @@ async function showLeaderboard(){
       leaderboardList.appendChild(li);
     });
 
-  } catch (e) {
+  } catch {
     leaderboardList.innerHTML = "<li>Error loading leaderboard</li>";
   }
 
