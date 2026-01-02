@@ -219,8 +219,11 @@ function restartGame(){
    LEADERBOARD (GLOBAL)
 ===================== */
 async function saveScore(){
-  alert("saveScore clicked");
- console.log("score:", score, "scoreSubmitted:", scoreSubmitted);
+  if(score <= 0) {
+  alert("Score is zero");
+  return;
+}
+
 
 
   const name = playerNameInput.value.trim() || "Anonymous";
