@@ -257,7 +257,7 @@ async function showLeaderboard(){
     const snapshot = await db
       .collection("leaderboard")
       .orderBy("score", "desc")
-      .limit(40)
+      .limit(20)
       .get();
 
     leaderboardList.innerHTML = "";
@@ -265,9 +265,21 @@ async function showLeaderboard(){
     let rank = 1;
 
     snapshot.forEach(doc => {
-      const data = doc.data();
+      const { name, score } = doc.data();
       const li = document.createElement("li");
-      li.textContent = `${rank}. ${data.name} — ${data.score}`;
+
+      li.classList.add("leaderboard-item");
+
+      if(rank === 1) li.classList.add("gold");
+      else if(rank === 2) li.classList.add("silver");
+      else if(rank === 3) li.classList.add("bronze");
+
+      li.innerHTML = `
+        <span class="rank">${rank}</span>
+        <span class="player-name">${name}</span>
+        <span class="player-score">${score}</span>
+      `;
+
       leaderboardList.appendChild(li);
       rank++;
     });
