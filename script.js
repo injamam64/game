@@ -257,7 +257,7 @@ async function showLeaderboard(){
     const snapshot = await db
       .collection("leaderboard")
       .orderBy("score", "desc")
-      .limit(20)
+      .limit(40)
       .get();
 
     leaderboardList.innerHTML = "";
