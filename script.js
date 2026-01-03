@@ -261,11 +261,15 @@ async function showLeaderboard(){
       .get();
 
     leaderboardList.innerHTML = "";
+
+    let rank = 1;
+
     snapshot.forEach(doc => {
-      const { name, score } = doc.data();
+      const data = doc.data();
       const li = document.createElement("li");
-      li.textContent = `${name} - ${score}`;
+      li.textContent = `${rank}. ${data.name} — ${data.score}`;
       leaderboardList.appendChild(li);
+      rank++;
     });
 
   } catch (e) {
@@ -274,6 +278,7 @@ async function showLeaderboard(){
 
   showScreen(leaderboardScreen);
 }
+
 
 function closeLeaderboard(){
   showScreen(startScreen);
