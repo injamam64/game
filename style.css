@@ -308,3 +308,56 @@ body {
 .hidden {
   display: none !important;
 }
+
+/* ======================
+   LEADERBOARD CENTER FIX
+====================== */
+
+/* Dark overlay already exists via .game-over */
+#leaderboardScreen{
+  justify-content:center;
+  align-items:center;
+}
+
+/* Inner leaderboard card */
+#leaderboardScreen > *{
+  pointer-events:auto;
+}
+
+#leaderboardScreen h2,
+#leaderboardScreen ol,
+#leaderboardScreen button{
+  width:100%;
+}
+
+/* Create a centered card */
+#leaderboardScreen{
+  padding:20px;
+}
+
+#leaderboardScreen ol{
+  max-width:320px;
+  margin:10px auto;
+  background:white;
+  border-radius:14px;
+  padding:10px 14px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.25);
+}
+
+/* Each row */
+.leaderboard-item{
+  background:#f4f4f4;
+  margin:6px 0;
+}
+
+/* Top 3 override still works */
+.gold, .silver, .bronze{
+  margin:6px 0;
+}
+
+/* Back button spacing */
+#leaderboardScreen button{
+  max-width:200px;
+  margin:15px auto 0;
+}
+
