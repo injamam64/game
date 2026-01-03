@@ -289,6 +289,9 @@ async function showLeaderboard(){
   }
 
   showScreen(leaderboardScreen);
+    requestAnimationFrame(() => {
+    leaderboardList.scrollTop = 0;
+  });
 }
 
 
