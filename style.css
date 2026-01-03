@@ -301,10 +301,19 @@ body {
 ====================== */
 
 #leaderboardScreen{
-  justify-content:center;
+  display:flex;
+  flex-direction:column;
+
+  /* Center card horizontally */
   align-items:center;
+
+  /* ⛔ DO NOT vertically center */
+  justify-content:flex-start;
+
   padding:16px;
+  overflow-y:auto;   /* ✅ single scroll container */
 }
+
 
 /* Leaderboard Card */
 #leaderboardScreen ol{
