@@ -211,6 +211,79 @@ body {
 #leaderboardScreen li{
   margin:6px 0;
 }
+/* Leaderboard List */
+#leaderboardList{
+  list-style:none;
+  padding:0;
+  margin:0;
+  width:100%;
+}
+
+/* Each Row */
+.leaderboard-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 14px;
+  margin:6px 0;
+  border-radius:10px;
+  background:rgba(255,255,255,0.9);
+  font-weight:bold;
+}
+
+/* Rank Circle */
+.leaderboard-item .rank{
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  margin-right:10px;
+}
+
+/* Name & Score */
+.player-name{
+  flex:1;
+  text-align:left;
+}
+
+.player-score{
+  font-weight:bold;
+}
+
+/* 🥇🥈🥉 Top 3 Colors */
+.gold{
+  background:linear-gradient(135deg,#ffd700,#ffb700);
+  color:#000;
+}
+
+.gold .rank{
+  background:#fff;
+  color:#000;
+}
+
+.silver{
+  background:linear-gradient(135deg,#e0e0e0,#bdbdbd);
+  color:#000;
+}
+
+.silver .rank{
+  background:#fff;
+  color:#000;
+}
+
+.bronze{
+  background:linear-gradient(135deg,#cd7f32,#b87333);
+  color:#fff;
+}
+
+.bronze .rank{
+  background:#fff;
+  color:#000;
+}
+
 
 #playerName{
   padding:10px;
