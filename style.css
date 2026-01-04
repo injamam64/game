@@ -394,3 +394,11 @@ body {
   max-width:220px;
   margin:14px auto 0;
 }
+
+/* ⭐ Current Player Highlight */
+.current-player{
+  background:#dbeeff !important;
+  border:2px solid #4da6ff;
+  box-shadow:0 0 10px rgba(77,166,255,0.6);
+}
+
