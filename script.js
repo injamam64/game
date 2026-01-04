@@ -237,10 +237,12 @@ async function saveScore(){
 
   try {
     await db.collection("leaderboard").add({
-      name: name,
-      score: score,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
+  name,
+  score,
+  mode: kidsMode ? "kids" : "normal",   // 👈 IMPORTANT
+  createdAt: firebase.firestore.FieldValue.serverTimestamp()
+});
+
     // ✅ GO TO HOME AFTER SUBMIT
     showScreen(startScreen);
 
