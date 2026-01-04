@@ -238,7 +238,7 @@ async function saveScore(){
       score: score,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-
+localStorage.setItem("lastPlayerName", name);
     // ✅ GO TO HOME AFTER SUBMIT
     showScreen(startScreen);
 
@@ -257,7 +257,7 @@ async function showLeaderboard(){
     const snapshot = await db
       .collection("leaderboard")
       .orderBy("score", "desc")
-      .limit(20)
+      .limit(40)
       .get();
 
     leaderboardList.innerHTML = "";
@@ -282,6 +282,12 @@ async function showLeaderboard(){
 
       leaderboardList.appendChild(li);
       rank++;
+      const lastPlayer = localStorage.getItem("lastPlayerName");
+
+if (lastPlayer && data.name === lastPlayer && rank > 3) {
+  li.classList.add("current-player");
+}
+
     });
 
   } catch (e) {
