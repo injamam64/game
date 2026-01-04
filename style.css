@@ -395,10 +395,66 @@ body {
   margin:14px auto 0;
 }
 
-/* ⭐ Current Player Highlight */
-.current-player{
-  background:#dbeeff !important;
-  border:2px solid #4da6ff;
-  box-shadow:0 0 10px rgba(77,166,255,0.6);
+/* ======================
+   TOP 3 ANIMATIONS
+====================== */
+
+/* 🥇 FIRST PLACE – GOLD PULSE */
+.gold {
+  animation: goldPulse 1.8s infinite ease-in-out;
 }
+
+@keyframes goldPulse {
+  0% {
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 14px rgba(255, 215, 0, 1);
+    transform: scale(1.03);
+  }
+  100% {
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+    transform: scale(1);
+  }
+}
+
+/* 🥈 SECOND PLACE – FLOAT */
+.silver {
+  animation: silverFloat 2s infinite ease-in-out;
+}
+
+@keyframes silverFloat {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+  100% { transform: translateY(0); }
+}
+
+/* 🥉 THIRD PLACE – SHIMMER */
+.bronze {
+  position: relative;
+  overflow: hidden;
+}
+
+.bronze::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,0.6),
+    transparent
+  );
+  animation: bronzeShimmer 2.5s infinite;
+}
+
+@keyframes bronzeShimmer {
+  0% { left: -60%; }
+  100% { left: 120%; }
+}
+
 
