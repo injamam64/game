@@ -178,8 +178,10 @@ function clearInput(){
 /* =====================
    ANSWER HANDLERS
 ===================== */
-function handleCorrect(){
-  score += 10;
+functionfunction handleCorrect(){
+  const points = kidsMode ? 5 : 10;   // 👈 CHANGE HERE
+
+  score += points;
   scoreBox.textContent = score;
 
   clearInterval(dropInterval);
@@ -187,6 +189,7 @@ function handleCorrect(){
 
   setTimeout(createDroplet, 300);
 }
+
 
 function handleWrong(){
   clearInterval(dropInterval);
