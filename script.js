@@ -178,7 +178,7 @@ function clearInput(){
 /* =====================
    ANSWER HANDLERS
 ===================== */
-functionfunction handleCorrect(){
+function handleCorrect(){
   const points = kidsMode ? 5 : 10;   // 👈 CHANGE HERE
 
   score += points;
