@@ -22,7 +22,8 @@ let gameStarted = false;
 let kidsMode = false;
 let level = 1;
 let scoreSubmitted = false;
-let inputLocked = false;
+let keypadLocked = false;
+
 
 
 /* =====================
@@ -108,7 +109,7 @@ leaderboardScreen.style.display = "none";
    CREATE DROPLET
 ===================== */
 function createDroplet(){
-  inputLocked = false;
+  keypadLocked = false;
   if(!gameStarted) return;
 
   gameArea.innerHTML = "";
@@ -160,31 +161,34 @@ function createDroplet(){
 ===================== */
 function pressKey(num){
   if (!gameStarted) return;
-  if (inputLocked) return; // 🔒 prevent fast double tap
+  if (keypadLocked) return; // 🔒 stop multitouch
+  keypadLocked = true;
 
-  if (kidsMode && input.length >= 1) return;
-  if (!kidsMode && input.length >= 2) return;
+  if (kidsMode && input.length >= 1) {
+    keypadLocked = false;
+    return;
+  }
+
+  if (!kidsMode && input.length >= 2) {
+    keypadLocked = false;
+    return;
+  }
 
   input += num;
   answerBox.textContent = input;
 
-  // Lock input before validation
-  if (
-    parseInt(input) === correctAnswer ||
-    kidsMode ||
-    input.length === 2
-  ) {
-    inputLocked = true;
-
-    setTimeout(() => {
-      if (parseInt(input) === correctAnswer) {
-        handleCorrect();
-      } else {
-        handleWrong();
-      }
-    }, 60); // ⏱ tiny delay fixes mobile tap issue
-  }
+  // Wait one frame so DOM updates correctly
+  requestAnimationFrame(() => {
+    if (parseInt(input) === correctAnswer) {
+      handleCorrect();
+    } else if (kidsMode || input.length === 2) {
+      handleWrong();
+    } else {
+      keypadLocked = false; // allow next digit
+    }
+  });
 }
+
 
 
 function clearInput(){
@@ -228,7 +232,7 @@ function handleWrong(){
    GAME OVER
 ===================== */
 function gameOver(){
-  inputLocked = false;
+  keypadLocked = false;
   gameStarted = false;
   finalScore.textContent = score;
   showScreen(gameOverScreen);
