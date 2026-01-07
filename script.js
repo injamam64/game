@@ -22,6 +22,8 @@ let gameStarted = false;
 let kidsMode = false;
 let level = 1;
 let scoreSubmitted = false;
+let inputLocked = false;
+
 
 /* =====================
    ELEMENTS
@@ -106,6 +108,7 @@ leaderboardScreen.style.display = "none";
    CREATE DROPLET
 ===================== */
 function createDroplet(){
+  inputLocked = false;
   if(!gameStarted) return;
 
   gameArea.innerHTML = "";
@@ -156,19 +159,33 @@ function createDroplet(){
    INPUT
 ===================== */
 function pressKey(num){
-  if(!gameStarted) return;
-  if(kidsMode && input.length >= 1) return;
-  if(!kidsMode && input.length >= 2) return;
+  if (!gameStarted) return;
+  if (inputLocked) return; // 🔒 prevent fast double tap
+
+  if (kidsMode && input.length >= 1) return;
+  if (!kidsMode && input.length >= 2) return;
 
   input += num;
   answerBox.textContent = input;
 
-  if(parseInt(input) === correctAnswer){
-    handleCorrect();
-  }else if(kidsMode || input.length === 2){
-    handleWrong();
+  // Lock input before validation
+  if (
+    parseInt(input) === correctAnswer ||
+    kidsMode ||
+    input.length === 2
+  ) {
+    inputLocked = true;
+
+    setTimeout(() => {
+      if (parseInt(input) === correctAnswer) {
+        handleCorrect();
+      } else {
+        handleWrong();
+      }
+    }, 60); // ⏱ tiny delay fixes mobile tap issue
   }
 }
+
 
 function clearInput(){
   input = "";
@@ -211,6 +228,7 @@ function handleWrong(){
    GAME OVER
 ===================== */
 function gameOver(){
+  inputLocked = false;
   gameStarted = false;
   finalScore.textContent = score;
   showScreen(gameOverScreen);
