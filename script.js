@@ -236,6 +236,7 @@ function gameOver(){
   gameStarted = false;
   finalScore.textContent = score;
   showScreen(gameOverScreen);
+  history.pushState({ screen: "gameover" }, "", "");
 }
 
 /* =====================
@@ -243,6 +244,7 @@ function gameOver(){
 ===================== */
 function restartGame(){
   showScreen(startScreen);
+  history.pushState({ screen: "home" }, "", "");
 }
 
 /* =====================
@@ -317,6 +319,7 @@ async function showLeaderboard(){
   }
 
   showScreen(leaderboardScreen);
+  history.pushState({ screen: "leaderboard" }, "", "");
    requestAnimationFrame(() => {
     leaderboardScreen.scrollTop = 0;
     leaderboardList.scrollTop = 0;
@@ -326,4 +329,38 @@ async function showLeaderboard(){
 
 function closeLeaderboard(){
   showScreen(startScreen);
+  history.pushState({ screen: "home" }, "", "");
 }
+/* =====================
+   HANDLE PHONE / BROWSER BACK BUTTON
+===================== */
+
+// Create initial history state
+history.replaceState({ screen: "home" }, "", "");
+
+// Intercept back button
+window.addEventListener("popstate", () => {
+
+  // If leaderboard is open → go home
+  if (!leaderboardScreen.classList.contains("hidden")) {
+    closeLeaderboard();
+    history.pushState({ screen: "home" }, "", "");
+    return;
+  }
+
+  // If game over screen is open → go home
+  if (!gameOverScreen.classList.contains("hidden")) {
+    restartGame();
+    history.pushState({ screen: "home" }, "", "");
+    return;
+  }
+
+  // If game is running → stay in game (prevent exit)
+  if (gameStarted) {
+    history.pushState({ screen: "game" }, "", "");
+    return;
+  }
+
+  // Otherwise → allow browser to exit
+});
+
