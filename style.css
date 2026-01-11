@@ -156,6 +156,12 @@ body {
   border-radius:12px;
   touch-action:manipulation;
 }
+.keypad button.pressed{
+  transform: scale(0.92);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  background-color: rgba(255,255,255,0.85);
+}
+
 
 /* ======================
    START / GAME OVER
@@ -456,5 +462,27 @@ body {
   0% { left: -60%; }
   100% { left: 120%; }
 }
+
+/* ======================
+   KEYPAD TAP ANIMATION
+====================== */
+
+.keypad button{
+  position: relative;
+  transition: 
+    transform 0.08s ease,
+    box-shadow 0.08s ease,
+    background-color 0.08s ease;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+  -webkit-tap-highlight-color: transparent; /* remove blue flash */
+}
+
+/* Pressed state */
+.keypad button:active{
+  transform: scale(0.94);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  background-color: rgba(255,255,255,0.85);
+}
+
 
 
