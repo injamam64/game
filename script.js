@@ -166,19 +166,27 @@ document.querySelectorAll(".keypad button").forEach(btn => {
   btn.addEventListener("pointerdown", e => {
     e.preventDefault();
 
-    if (btn.dataset.key !== undefined) {
-      queueInput(btn.dataset.key);
+    const key = btn.dataset.key;
+    if (!key) return;
+
+    // ✅ CLEAR ALL
+    if (key === "clear") {
+      clearInput();
+      return;
     }
 
-    if (btn.dataset.action === "clear") {
-      clearInput();
-    }
-     if (key === "backspace") {
+    // ✅ BACKSPACE
+    if (key === "backspace") {
       input = input.slice(0, -1);
       answerBox.textContent = input || "Type answer...";
+      return;
     }
+
+    // ✅ NUMBER INPUT
+    queueInput(key);
   });
 });
+
 
 function queueInput(value){
   inputQueue.push(value);
