@@ -23,6 +23,8 @@ let kidsMode = false;
 let level = 1;
 let scoreSubmitted = false;
 let keypadLocked = false;
+let inputQueue = [];
+let processingInput = false;
 
 
 
@@ -109,7 +111,8 @@ leaderboardScreen.style.display = "none";
    CREATE DROPLET
 ===================== */
 function createDroplet(){
-  keypadLocked = false;
+  inputQueue = [];
+processingInput = false;
   if(!gameStarted) return;
 
   gameArea.innerHTML = "";
@@ -159,35 +162,60 @@ function createDroplet(){
 /* =====================
    INPUT
 ===================== */
-function pressKey(num){
+document.querySelectorAll(".keypad button").forEach(btn => {
+  btn.addEventListener("pointerdown", e => {
+    e.preventDefault();
+
+    if (btn.dataset.key !== undefined) {
+      queueInput(btn.dataset.key);
+    }
+
+    if (btn.dataset.action === "clear") {
+      clearInput();
+    }
+  });
+});
+
+function queueInput(value){
+  inputQueue.push(value);
+  processQueue();
+}
+
+function processQueue(){
+  if (processingInput) return;
   if (!gameStarted) return;
-  if (keypadLocked) return; // 🔒 stop multitouch
-  keypadLocked = true;
+  if (inputQueue.length === 0) return;
+
+  processingInput = true;
+
+  const num = inputQueue.shift();
 
   if (kidsMode && input.length >= 1) {
-    keypadLocked = false;
+    processingInput = false;
     return;
   }
 
   if (!kidsMode && input.length >= 2) {
-    keypadLocked = false;
+    processingInput = false;
     return;
   }
 
   input += num;
   answerBox.textContent = input;
 
-  // Wait one frame so DOM updates correctly
   requestAnimationFrame(() => {
     if (parseInt(input) === correctAnswer) {
       handleCorrect();
     } else if (kidsMode || input.length === 2) {
       handleWrong();
     } else {
-      keypadLocked = false; // allow next digit
+      processingInput = false;
+      processQueue(); // process next queued tap
     }
   });
 }
+
+
 
 
 
@@ -232,6 +260,8 @@ function handleWrong(){
    GAME OVER
 ===================== */
 function gameOver(){
+  inputQueue = [];
+processingInput = false;
   keypadLocked = false;
   gameStarted = false;
   finalScore.textContent = score;
