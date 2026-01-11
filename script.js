@@ -173,6 +173,10 @@ document.querySelectorAll(".keypad button").forEach(btn => {
     if (btn.dataset.action === "clear") {
       clearInput();
     }
+     if (key === "backspace") {
+      input = input.slice(0, -1);
+      answerBox.textContent = input || "Type answer...";
+    }
   });
 });
 
